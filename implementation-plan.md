@@ -1,4 +1,4 @@
-# Workflow: from raw session to model × effort economics
+# Implementation plan: from raw session to model × effort economics
 
 > Implementation plan for the complexity-classifier pipeline described in
 > `projectidea.md`. This file captures *how* the pieces fit together; the *why*
