@@ -11,3 +11,13 @@ Status: spec-only, no code yet. First deliverable is a single analysis script ov
 ## Workflow
 
 `main` is the source of truth. When working on any other branch, deliver changes to `main` by opening a pull request and merging it — do not leave work stranded on a feature branch.
+
+## Subscription usage
+
+Check current Claude subscription usage (5-hour + 7-day windows, extra-usage credits) via:
+
+```bash
+curl -s "https://claude-usage.tasty-projects.workers.dev/?key=$CLAUDE_USAGE_KEY"
+```
+
+The key is a secret — never commit it. It's provided as the `CLAUDE_USAGE_KEY` environment variable (set in the web environment config, not in this repo).
