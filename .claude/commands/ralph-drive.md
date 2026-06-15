@@ -26,8 +26,10 @@ Repeat this cycle:
      ```
      Do NOT poll in a tight loop and do NOT use repeated short sleeps — sleep the
      whole interval once.
-   - `RALPH_GATE_ERROR …` → The usage endpoint or `$CLAUDE_USAGE_KEY` failed.
-     STOP and report it to the user; do not keep burning the loop blind.
+   - `RALPH_GATE_ERROR …` → The usage endpoint or `$CLAUDE_USAGE_KEY` failed (NOT
+     a quota pause). It may be a transient blip: wait 3 minutes and re-invoke
+     `/ralph`, up to 3 times. If it still errors, STOP and report to the user —
+     do not keep burning the loop blind without a working usage check.
 
 3. Keep going until you hit `RALPH_DONE` or `RALPH_GATE_ERROR`, the user stops
    you, or you have looped many times with no new commits (a stall — report it).

@@ -46,7 +46,9 @@ const gatePrompt = `You are the USAGE GATE for an autonomous loop. Do this and O
 4. blocked = (util >= ${cfg.usageThreshold}).
 5. As your VERY LAST line, output exactly one compact JSON object, prefixed with GATE_RESULT and nothing after it:
 GATE_RESULT {"blocked":<true|false>,"util":<number>,"window":"<five_hour|seven_day>","resetAt":"<iso8601>","fiveUtil":<number>,"sevenUtil":<number>}
-If the curl fails or the key is missing, set blocked to true, util to 100, and put the error text in a "note" field.`
+If you CANNOT read the utilizations — curl fails, the key is missing, or the JSON has no numeric utilization (e.g. it is an {"error": ...} object) — do NOT guess a number. Instead output only:
+GATE_RESULT {"error":"<short reason>"}
+A missing/null utilization is an endpoint failure, NOT a 0% and NOT a 100%: report it as an error.`
 
 const implementPrompt = `You are ONE iteration of an autonomous "Ralph" loop building this project. A FRESH agent runs every iteration, so the files below are your only memory: read them first, leave them better than you found them. Repo root is the current directory.
 
@@ -76,8 +78,9 @@ for (let i = 1; i <= cfg.maxIterations; i++) {
   const gateOut = await agent(gatePrompt, { label: `gate-${i}` })
   const gate = parseGate(gateOut)
 
-  if (!gate) {
-    return `RALPH_GATE_ERROR — could not read usage after ${completed} task(s) this run. Check $CLAUDE_USAGE_KEY / the endpoint, then re-run /ralph. Raw: ${String(gateOut).slice(-300)}`
+  if (!gate || gate.error) {
+    const why = gate?.error ? gate.error : `unparseable gate output: ${String(gateOut).slice(-200)}`
+    return `RALPH_GATE_ERROR — could not read usage after ${completed} task(s) this run (${why}). This is an endpoint/key problem, not a quota pause: check $CLAUDE_USAGE_KEY and the usage endpoint, then re-run /ralph.`
   }
   if (gate.blocked) {
     return `RALPH_BLOCKED resetAt=${gate.resetAt} window=${gate.window} util=${gate.util} (completed ${completed} task(s) this run). Sleep until resetAt, then re-run /ralph.`
